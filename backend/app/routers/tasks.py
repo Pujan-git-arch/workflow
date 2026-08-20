@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
+from app.routers.auth import get_current_user
+from app.models.user import User
+
 from app.database import get_db
 from app.models.task import Task
 from app.schemas.task import (
@@ -20,7 +23,8 @@ router = APIRouter(
 @router.post("/", response_model=TaskResponse)
 def create_task(
     task: TaskCreate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     new_task = Task(
         title=task.title,
@@ -28,7 +32,6 @@ def create_task(
         priority=task.priority,
         due_date=task.due_date,
         department_id=task.department_id,
-        created_by=task.created_by,
         assigned_to=task.assigned_to
     )
 
@@ -42,7 +45,8 @@ def create_task(
 # GET ALL TASKS
 @router.get("/", response_model=list[TaskResponse])
 def get_tasks(
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     tasks = db.query(Task).all()
 
@@ -53,7 +57,8 @@ def get_tasks(
 @router.get("/{task_id}", response_model=TaskResponse)
 def get_task(
     task_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     task = db.query(Task).filter(
         Task.id == task_id
@@ -73,7 +78,8 @@ def get_task(
 def update_task(
     task_id: int,
     task_data: TaskUpdate,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     task = db.query(Task).filter(
         Task.id == task_id
@@ -113,7 +119,8 @@ def update_task(
 @router.delete("/{task_id}")
 def delete_task(
     task_id: int,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
 ):
     task = db.query(Task).filter(
         Task.id == task_id
