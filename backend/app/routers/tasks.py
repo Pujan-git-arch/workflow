@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.routers.auth import get_current_user
 from app.models.user import User
-
 from app.database import get_db
 from app.models.task import Task
 from app.schemas.task import (
@@ -32,6 +31,7 @@ def create_task(
         priority=task.priority,
         due_date=task.due_date,
         department_id=task.department_id,
+        created_by=current_user.id,
         assigned_to=task.assigned_to
     )
 
@@ -48,7 +48,11 @@ def get_tasks(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    tasks = db.query(Task).all()
+    tasks = db.query(Task).filter(
+        (Task.created_by == current_user.id) |
+        (Task.assigned_to == current_user.id) |
+        (Task.department_id == current_user.department_id)
+    ).all()
 
     return tasks
 
@@ -66,8 +70,21 @@ def get_task(
 
     if task is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
+        )
+
+    # AUTHORIZATION CHECK: Must be creator, assignee, or belong to the same department
+    has_access = (
+        task.created_by == current_user.id or
+        task.assigned_to == current_user.id or
+        task.department_id == current_user.department_id
+    )
+
+    if not has_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation forbidden: You do not have permission to view this task."
         )
 
     return task
@@ -87,8 +104,18 @@ def update_task(
 
     if task is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
+        )
+
+    # AUTHORIZATION CHECK: Only task creator or assignee can update
+    is_owner = task.created_by == current_user.id
+    is_assignee = task.assigned_to == current_user.id
+
+    if not (is_owner or is_assignee):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation forbidden: You do not have permission to modify this task."
         )
 
     if task_data.title is not None:
@@ -128,8 +155,15 @@ def delete_task(
 
     if task is None:
         raise HTTPException(
-            status_code=404,
+            status_code=status.HTTP_404_NOT_FOUND,
             detail="Task not found"
+        )
+
+    # STRICT AUTHORIZATION CHECK: Only task creator can delete
+    if task.created_by != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Operation forbidden: Only the creator can delete this task."
         )
 
     db.delete(task)

@@ -9,7 +9,6 @@ class TaskCreate(BaseModel):
     priority: str = "medium"
     due_date: datetime | None = None
     department_id: int
-    created_by: int
     assigned_to: int | None = None
 
 

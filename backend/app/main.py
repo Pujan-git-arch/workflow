@@ -35,3 +35,9 @@ def test_db(db: Session = Depends(get_db)):
     return {
         "database": result.scalar()
     }
+    
+@app.get("/health")
+def health_check():
+    return {
+        "status": "ok"
+    }
