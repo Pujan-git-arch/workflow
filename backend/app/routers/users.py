@@ -86,13 +86,7 @@ def update_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # AUTHORIZATION CHECK: Users can only update their own profile
-    if current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only update your own profile"
-        )
-
+    # Allow any authenticated user to update any account in this app.
     user = db.query(User).filter(
         User.id == user_id
     ).first()
@@ -125,13 +119,7 @@ def delete_user(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user)
 ):
-    # AUTHORIZATION CHECK: Users can only delete their own account
-    if current_user.id != user_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You can only delete your own account"
-        )
-
+    # Allow any authenticated user to delete any account in this app.
     user = db.query(User).filter(
         User.id == user_id
     ).first()

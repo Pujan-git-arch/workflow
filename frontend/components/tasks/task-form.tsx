@@ -13,6 +13,7 @@ import type { TaskFormValues, TaskItem, TaskPriority } from "@/types/task";
 const taskSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().trim().optional().default(""),
+  status: z.enum(["todo", "in_progress", "done"]),
   priority: z.enum(["low", "medium", "high"]),
   due_date: z.string().optional().default(""),
   department_id: z.number().int().positive("Department is required"),
@@ -30,6 +31,7 @@ export type TaskFormProps = {
 const defaultValues: TaskFormValues = {
   title: "",
   description: "",
+  status: "todo",
   priority: "medium",
   due_date: "",
   department_id: 1,
@@ -46,6 +48,7 @@ export function TaskForm({ mode, initialValues, onSubmit, onCancel, submitLabel 
       ...(initialValues && {
         title: initialValues.title ?? "",
         description: initialValues.description ?? "",
+        status: (initialValues.status ?? "todo") as TaskFormValues["status"],
         priority: (initialValues.priority ?? "medium") as TaskPriority,
         due_date: initialValues.due_date ? initialValues.due_date.slice(0, 10) : "",
         department_id: initialValues.department_id ?? 1,
@@ -63,6 +66,7 @@ export function TaskForm({ mode, initialValues, onSubmit, onCancel, submitLabel 
     form.reset({
       title: initialValues.title ?? "",
       description: initialValues.description ?? "",
+      status: (initialValues.status ?? "todo") as TaskFormValues["status"],
       priority: (initialValues.priority ?? "medium") as TaskPriority,
       due_date: initialValues.due_date ? initialValues.due_date.slice(0, 10) : "",
       department_id: initialValues.department_id ?? 1,
@@ -106,6 +110,21 @@ export function TaskForm({ mode, initialValues, onSubmit, onCancel, submitLabel 
 
       <div className="grid gap-4 md:grid-cols-2">
         <div>
+          <label htmlFor="status" className="mb-1 block text-sm font-medium text-slate-700">
+            Status
+          </label>
+          <select
+            id="status"
+            {...form.register("status")}
+            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition focus:border-slate-500"
+          >
+            <option value="todo">To do</option>
+            <option value="in_progress">In progress</option>
+            <option value="done">Completed</option>
+          </select>
+        </div>
+
+        <div>
           <label htmlFor="priority" className="mb-1 block text-sm font-medium text-slate-700">
             Priority
           </label>
@@ -119,26 +138,26 @@ export function TaskForm({ mode, initialValues, onSubmit, onCancel, submitLabel 
             <option value="high">High</option>
           </select>
         </div>
+      </div>
 
-        <div>
-          <label htmlFor="department_id" className="mb-1 block text-sm font-medium text-slate-700">
-            Department
-          </label>
-          <select
-            id="department_id"
-            {...form.register("department_id", { valueAsNumber: true })}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition focus:border-slate-500"
-          >
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {dept.name}
-              </option>
-            ))}
-          </select>
-          {form.formState.errors.department_id ? (
-            <p className="mt-1 text-sm text-red-600">{form.formState.errors.department_id.message}</p>
-          ) : null}
-        </div>
+      <div>
+        <label htmlFor="department_id" className="mb-1 block text-sm font-medium text-slate-700">
+          Department
+        </label>
+        <select
+          id="department_id"
+          {...form.register("department_id", { valueAsNumber: true })}
+          className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none transition focus:border-slate-500"
+        >
+          {departments.map((dept) => (
+            <option key={dept.id} value={dept.id}>
+              {dept.name}
+            </option>
+          ))}
+        </select>
+        {form.formState.errors.department_id ? (
+          <p className="mt-1 text-sm text-red-600">{form.formState.errors.department_id.message}</p>
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

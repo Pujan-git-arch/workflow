@@ -20,6 +20,7 @@ export default function DashboardPage() {
       ...values,
       description: values.description || null,
       due_date: values.due_date || null,
+      status: values.status,
       assigned_to: values.assigned_to === "" ? null : Number(values.assigned_to),
     };
 
@@ -34,6 +35,7 @@ export default function DashboardPage() {
       ...values,
       description: values.description || null,
       due_date: values.due_date || null,
+      status: values.status,
       assigned_to: values.assigned_to === "" ? null : Number(values.assigned_to),
     };
 
@@ -118,6 +120,9 @@ export default function DashboardPage() {
                       <p className="text-sm text-slate-500">{task.description || "No description"}</p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
+                        {task.status === "done" ? "Completed" : task.status === "in_progress" ? "In progress" : "To do"}
+                      </span>
                       <span className="rounded-full bg-slate-100 px-2 py-1 text-xs font-medium text-slate-700">
                         {task.priority}
                       </span>

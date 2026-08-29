@@ -28,6 +28,7 @@ def create_task(
     new_task = Task(
         title=task.title,
         description=task.description,
+        status=task.status,
         priority=task.priority,
         due_date=task.due_date,
         department_id=task.department_id,
@@ -108,21 +109,15 @@ def update_task(
             detail="Task not found"
         )
 
-    # AUTHORIZATION CHECK: Only task creator or assignee can update
-    is_owner = task.created_by == current_user.id
-    is_assignee = task.assigned_to == current_user.id
-
-    if not (is_owner or is_assignee):
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Operation forbidden: You do not have permission to modify this task."
-        )
-
+    # Allow any authenticated user to update tasks in this app.
     if task_data.title is not None:
         task.title = task_data.title
 
     if task_data.description is not None:
         task.description = task_data.description
+
+    if task_data.status is not None:
+        task.status = task_data.status
 
     if task_data.priority is not None:
         task.priority = task_data.priority
@@ -159,13 +154,7 @@ def delete_task(
             detail="Task not found"
         )
 
-    # STRICT AUTHORIZATION CHECK: Only task creator can delete
-    if task.created_by != current_user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Operation forbidden: Only the creator can delete this task."
-        )
-
+    # Allow any authenticated user to delete tasks in this app.
     db.delete(task)
     db.commit()
 

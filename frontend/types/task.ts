@@ -16,6 +16,7 @@ export type TaskItem = {
 export type CreateTaskPayload = {
   title: string;
   description?: string | null;
+  status?: TaskStatus;
   priority?: TaskPriority;
   due_date?: string | null;
   department_id: number;
@@ -27,6 +28,7 @@ export type UpdateTaskPayload = Partial<CreateTaskPayload>;
 export type TaskFormValues = {
   title: string;
   description: string;
+  status: TaskStatus;
   priority: TaskPriority;
   due_date: string;
   department_id: number;
