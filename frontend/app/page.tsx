@@ -1,38 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
-import api from "../lib/axios";
+import { useAuthStore } from "@/stores/auth.store";
 
 export default function Home() {
-  const [message, setMessage] = useState("Testing connection...");
+  const router = useRouter();
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   useEffect(() => {
-    const testConnection = async () => {
-      try {
-        const response = await api.get("/health");
+    router.replace(isAuthenticated ? "/dashboard" : "/login");
+  }, [isAuthenticated, router]);
 
-        setMessage(JSON.stringify(response.data));
-      } catch (error) {
-        console.error(error);
-        setMessage("Backend connection failed");
-      }
-    };
-
-    testConnection();
-  }, []);
-
-  return (
-    <main className="flex min-h-screen items-center justify-center">
-      <div>
-        <h1 className="text-2xl font-bold">
-          WorkFlow
-        </h1>
-
-        <p className="mt-4">
-          Backend response: {message}
-        </p>
-      </div>
-    </main>
-  );
-};
+  return null;
+}
